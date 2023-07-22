@@ -9,16 +9,22 @@ import { DataSource } from 'typeorm';
   imports: [
     UsersModule,
     TypeOrmModule.forRootAsync({
-      useFactory: () => ({
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: ['.env'],
+        }),
+      ],
+      useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: 'postgres',
-        password: 'root',
-        database: 'shop',
+        host: configService.get('DATABASE_HOST'),
+        port: configService.get('DATABASE_PORT'),
+        username: configService.get('DATABASE_USERNAME'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE_NAME'),
         entities: [User],
         synchronize: true,
       }),
+      inject: [ConfigService],
       dataSourceFactory: async (options) => {
         const dataSource = await new DataSource(options).initialize();
         return dataSource;
